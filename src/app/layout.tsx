@@ -37,7 +37,7 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {/* Top bar with Sign In/Sign Up & ModeToggle (NOT FIXED) */}
+          {/* Top bar with Sign In/Sign Up & ModeToggle */}
           <div className="flex justify-end items-center p-4 gap-4">
             <ModeToggle />
             <SignedOut>
@@ -53,7 +53,7 @@ export default async function RootLayout({
             </SignedIn>
           </div>
 
-          {/* FloatingDock (FIXED CENTER) */}
+          {/* FloatingDock (Fixed Center) */}
           <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50">
             <FloatingDock
               className="flex gap-x-8 p-4"
@@ -69,14 +69,19 @@ export default async function RootLayout({
             />
           </div>
 
-          {/* Main Content */}
+          {/* Main Layout with Sidebar (3:9 Ratio) */}
           <div className="pt-28">
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
               <div className="min-h-screen">
                 <main className="py-8">
                   <div className="max-w-7xl mx-auto px-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      <div className="hidden lg:block lg:col-span-3">SideBar</div>
+                    <div className="grid grid-cols-12 gap-6">
+                      {/* Sidebar (3/12 - 25%) */}
+                      <div className="hidden lg:block lg:col-span-3 p-4">
+                        SideBar
+                      </div>
+
+                      {/* Main Content (9/12 - 75%) */}
                       <div className="lg:col-span-9">{children}</div>
                     </div>
                   </div>
