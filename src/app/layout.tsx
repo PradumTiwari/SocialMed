@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import { FloatingDock } from "@/components/ui/FloatingDock";
 import { currentUser } from "@clerk/nextjs/server";
+import { syncUser } from "@/actions/user.action";
+import SideBar from "@/components/SideBar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,6 +34,10 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await currentUser();
+
+ if(user) await syncUser();
+
+
 
   return (
     <ClerkProvider>
@@ -78,7 +84,7 @@ export default async function RootLayout({
                     <div className="grid grid-cols-12 gap-6">
                       {/* Sidebar (3/12 - 25%) */}
                       <div className="hidden lg:block lg:col-span-3 p-4">
-                        SideBar
+                        <SideBar/>
                       </div>
 
                       {/* Main Content (9/12 - 75%) */}
