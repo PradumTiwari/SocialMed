@@ -13,7 +13,7 @@ import { FloatingDock } from "@/components/ui/FloatingDock";
 import { currentUser } from "@clerk/nextjs/server";
 import { syncUser } from "@/actions/user.action";
 import SideBar from "@/components/SideBar";
-
+import {Toaster} from "react-hot-toast";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -93,6 +93,7 @@ export default async function RootLayout({
                   </div>
                 </main>
               </div>
+              <Toaster/>
             </ThemeProvider>
           </div>
         </body>
