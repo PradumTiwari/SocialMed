@@ -36,6 +36,7 @@ export async function syncUser() {
 
 export async function getUserByClerkId(clerkId: string) {
   try {
+    
     return prisma.user.findUnique({
       where: { clerkId },
       include: {
