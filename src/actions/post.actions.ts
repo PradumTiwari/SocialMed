@@ -11,7 +11,7 @@ export async function createPost(content:string,image:string){
             data: {
               content,
               image,
-              authorId: userId,
+              authorId: (userId)?userId:"",
             },
           });
         revalidatePath("/");
@@ -126,6 +126,7 @@ export async function toggleLike(postId: string) {
                     userId: post.authorId, // recipient (post author)
                     creatorId: userId, // person who liked
                     postId,
+                    read:true,
                   },
                 }),
               ]
@@ -176,6 +177,7 @@ export async function toggleLike(postId: string) {
               creatorId: userId,
               postId,
               commentId: newComment.id,
+              read:false,
             },
           });
         }
