@@ -67,8 +67,8 @@ export default async function RootLayout({
                 { title: "Home", icon: <IoMdHome />, href: "/" },
                 ...(user
                   ? [
-                      { title: "Product", icon: <GoTerminal />, href: "#" },
-                      { title: "About", icon: <FaUser />, href: "#" },
+                      { title: "Product", icon: <GoTerminal />, href: "/notifications" },
+                      { title: "About", icon: <FaUser />, href: "/profile" },
                     ]
                   : []),
               ]}
