@@ -68,7 +68,7 @@ export default async function RootLayout({
                 ...(user
                   ? [
                       { title: "Product", icon: <GoTerminal />, href: "/notifications" },
-                      { title: "About", icon: <FaUser />, href: "/profile" },
+                      { title: "About", icon: <FaUser />, href: `/profile` }
                     ]
                   : []),
               ]}
