@@ -6,7 +6,7 @@ import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserBut
 import { IoMdHome } from "react-icons/io";
 import { GoTerminal } from "react-icons/go";
 import { FaUser } from "react-icons/fa";
-
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import { FloatingDock } from "@/components/ui/FloatingDock";
@@ -36,13 +36,15 @@ export default async function RootLayout({
   const user = await currentUser();
 
  if(user) await syncUser();
-
+ 
 
 
   return (
+   
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {/* Top bar with Sign In/Sign Up & ModeToggle */}
           <div className="flex justify-end items-center p-4 gap-4">
             <ModeToggle />
@@ -67,7 +69,7 @@ export default async function RootLayout({
                 { title: "Home", icon: <IoMdHome />, href: "/" },
                 ...(user
                   ? [
-                      { title: "Product", icon: <GoTerminal />, href: "/notifications" },
+                      { title: "Notifications", icon: <GoTerminal />, href: "/notifications" },
                       { title: "About", icon: <FaUser />, href: `/profile` }
                     ]
                   : []),
@@ -77,7 +79,7 @@ export default async function RootLayout({
 
           {/* Main Layout with Sidebar (3:9 Ratio) */}
           <div className="pt-28">
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+           
               <div className="min-h-screen">
                 <main className="py-8">
                   <div className="max-w-7xl mx-auto px-4">
@@ -94,10 +96,13 @@ export default async function RootLayout({
                 </main>
               </div>
               <Toaster/>
-            </ThemeProvider>
+            
           </div>
+          </ThemeProvider>
         </body>
       </html>
+      
     </ClerkProvider>
+    
   );
 }

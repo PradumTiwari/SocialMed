@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
+//It does nothing just to check if the user is present in database or not
 export async function syncUser() {
   try {
     const { userId } = await auth();
