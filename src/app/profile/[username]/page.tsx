@@ -6,6 +6,7 @@ import {
   } from "@/actions/profile.action";
   import { notFound } from "next/navigation";
   import ProfilePageClient from "./ProfliePageClient";
+import { getBookMark, getBookMarkOfUser } from "@/actions/bookMark.action";
   
   export async function generateMetadata({ params }: { params: { username: string } }) {
     const user = await getProfileByUsername(params.username);
@@ -22,10 +23,11 @@ import {
   
     if (!user) notFound();
   
-    const [posts, likedPosts, isCurrentUserFollowing] = await Promise.all([
+    const [posts, likedPosts, isCurrentUserFollowing,bookMarks] = await Promise.all([
       getUserPosts(user.id),
       getUserLikedPosts(user.id),
       isFollowing(user.id),
+      getBookMarkOfUser({ userId: user.id }),
     ]);
   
     return (
@@ -34,6 +36,7 @@ import {
         posts={posts}
         likedPosts={likedPosts}
         isFollowing={isCurrentUserFollowing}
+        bookMark={bookMarks}
       />
     );
   }

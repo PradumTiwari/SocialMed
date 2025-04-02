@@ -1,7 +1,9 @@
 "use client";
 
+import { getBookMark, getBookMarkOfUser } from "@/actions/bookMark.action";
 import { getProfileByUsername, getUserPosts, updateProfile } from "@/actions/profile.action";
 import { toggleFollow } from "@/actions/user.action";
+import BookMark from "@/components/BookMark";
 import PostCard from "@/components/PostCard";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,14 +33,17 @@ import {
 import { useState } from "react";
 import toast from "react-hot-toast";
 
+import { FaBookmark } from "react-icons/fa";
+
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
 type Posts = Awaited<ReturnType<typeof getUserPosts>>;
-
+type BookMarkPosts = Awaited<ReturnType<typeof getUserPosts>>;
 interface ProfilePageClientProps {
   user: NonNullable<User>;
   posts: Posts;
   likedPosts: Posts;
   isFollowing: boolean;
+  bookMark:BookMarkPosts
 }
 
 function ProfilePageClient({
@@ -46,6 +51,7 @@ function ProfilePageClient({
   likedPosts,
   posts,
   user,
+  bookMark,
 }: ProfilePageClientProps) {
   const { user: currentUser } = useUser();
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -58,7 +64,11 @@ function ProfilePageClient({
     location: user.location || "",
     website: user.website || "",
   });
-
+  
+  console.log("BookMarkPost",bookMark);
+  console.log("User Posts",posts);
+  
+  
   const handleEditSubmit = async () => {
     const formData = new FormData();
     Object.entries(editForm).forEach(([key, value]) => {
@@ -198,22 +208,43 @@ function ProfilePageClient({
               <HeartIcon className="size-4" />
               Likes
             </TabsTrigger>
+            <TabsTrigger
+              value="BookMark"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
+               data-[state=active]:bg-transparent px-6 font-semibold"
+            >
+             <FaBookmark/>
+              BookMark
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="BookMark" className="mt-6">
+            <div className="space-y-6">
+              {bookMark&&bookMark.length > 0 ? (
+                bookMark.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id}  />)
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">No BookMark yet</div>
+              )}
+            </div>
+          </TabsContent>
+
 
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-6">
-              {posts.length > 0 ? (
-                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+              {posts&&posts.length > 0 ? (
+                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id}  />)
               ) : (
                 <div className="text-center py-8 text-muted-foreground">No posts yet</div>
               )}
             </div>
           </TabsContent>
 
+          
+
           <TabsContent value="likes" className="mt-6">
             <div className="space-y-6">
               {likedPosts.length > 0 ? (
-                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id}  />)
               ) : (
                 <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
               )}

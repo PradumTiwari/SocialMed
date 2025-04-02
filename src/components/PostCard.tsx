@@ -2,7 +2,7 @@
 
 import { createComment, deletePost, getPosts, toggleLike } from "../actions/post.actions";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
@@ -12,11 +12,14 @@ import { DeleteAlertDialog } from "./DeleteAlertDialog";
 import { Button } from "./ui/button";
 import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
+import { CiBookmark } from "react-icons/ci";
+import { FaBookmark } from "react-icons/fa";
+import { create, getBookMark } from "@/actions/bookMark.action";
 
 type Posts = Awaited<ReturnType<typeof getPosts>>;
 type Post = Posts[number];
 
-function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
+function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string | null;isBookMark:string }) {
   const { user } = useUser();
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
@@ -25,8 +28,10 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
   const [hasLiked, setHasLiked] = useState(post.likes.some((like) => like.userId === dbUserId));
   const [optimisticLikes, setOptmisticLikes] = useState(post._count.likes);
   const [showComments, setShowComments] = useState(false);
-
+ 
+  const [showBookMark,setShowBookMark]=useState(false);
   const handleLike = async () => {
+
     if (isLiking) return;
     try {
       setIsLiking(true);
@@ -40,6 +45,9 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       setIsLiking(false);
     }
   };
+
+ 
+  const postId=post.id;
 
   const handleAddComment = async () => {
     if (!newComment.trim() || isCommenting) return;
@@ -57,6 +65,20 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     }
   };
 
+  const handleBookMark=async()=>{
+    
+    setShowBookMark((prev) => !prev);
+    const res=await create({postId});
+    if(res==false){
+      //means already  a bookmark
+      setShowBookMark(false);
+    }
+    else{
+      //its a new bookmark
+       setShowBookMark(true);
+    }
+  }
+
   const handleDeletePost = async () => {
     if (isDeleting) return;
     try {
@@ -70,6 +92,31 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       setIsDeleting(false);
     }
   };
+
+
+  useEffect(()=>{
+    const fetchBookmark = async () => {
+      try {
+        const marked = await getBookMark({ postId });
+        if (marked==true) {
+          setShowBookMark(true);
+        }
+      } catch (error) {
+        console.error("Error fetching bookmark:", error);
+      }
+    };
+  
+   if(!isBookMark){
+    fetchBookmark();
+   }
+   else{
+    setShowBookMark(true);
+   }
+    
+    
+   
+
+  },[postId])
 
   return (
     <Card className="overflow-hidden">
@@ -90,7 +137,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                     href={`/profile/${post.author.username}`}
                     className="font-semibold truncate"
                   >
-                    {post.author.name}
+                    {post.author.name} 
                   </Link>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Link href={`/profile/${post.author.username}`}>@{post.author.username}</Link>
@@ -115,7 +162,8 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
           )}
 
           {/* LIKE & COMMENT BUTTONS */}
-          <div className="flex items-center pt-2 space-x-4">
+         <div className="flex justify-between ">
+         <div className="flex items-center pt-2 space-x-4">
             {user ? (
               <Button
                 variant="ghost"
@@ -141,6 +189,8 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
               </SignInButton>
             )}
 
+           
+
             <Button
               variant="ghost"
               size="sm"
@@ -152,7 +202,23 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
               />
               <span>{post.comments.length}</span>
             </Button>
+   
+            
           </div>
+
+          <div className="flex pt-[13px]">
+           
+           {showBookMark==true?(<button className="text-xl" onClick={()=>handleBookMark()}>
+           <FaBookmark/>
+           </button>):(<button className="text-xl" onClick={()=>handleBookMark()}>
+           <CiBookmark/>
+           </button>)}
+          </div>
+
+         </div>
+
+          {/* The bookmark section */}
+          
 
           {/* COMMENTS SECTION */}
           {showComments && (

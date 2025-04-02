@@ -28,6 +28,7 @@ model User {
   following   Follows[] @relation("follower")
   notifications           Notification[] @relation("userNotifications")
   notificationsCreated    Notification[] @relation("notificationCreator")
+  bookMarks    BookMark[]
 }
 
 model Post {
@@ -35,6 +36,7 @@ model Post {
   authorId  String
   content   String
   image     String?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -43,6 +45,7 @@ model Post {
   comments      Comment[]
   likes        Like[]
   notifications Notification[]
+  bookMarks BookMark[]
 }
 
 model Comment {
@@ -110,4 +113,19 @@ enum NotificationType {
   LIKE
   COMMENT
   FOLLOW
+}
+
+
+
+model BookMark{
+  id String @id @default(cuid()) @unique
+  postId String
+  userId String
+  Post Post @relation(fields: [postId],references: [id],onDelete: Cascade)
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+   @@unique([postId, userId])
+
+
 }
