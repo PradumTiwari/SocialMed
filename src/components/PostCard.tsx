@@ -235,19 +235,21 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
                     </Link>
                     
                     <div className="flex-1 min-w-0">
-                    <Link href={`/profile/${comment.author.username}`}>
+                  
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <Link href={`/profile/${comment.author.username}`}>
                         <span className="font-medium text-sm">{comment.author.name}</span>
                         <span className="text-sm text-muted-foreground">
                           @{comment.author.username}
                         </span>
+                        </Link>
                       
                         <span className="text-sm text-muted-foreground">·</span>
                         <span className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.createdAt))} ago
                         </span>
                       </div>
-                      </Link>
+                     
                      
                      
                       <p className="text-sm break-words">{comment.content}</p>
