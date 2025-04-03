@@ -65,8 +65,8 @@ function ProfilePageClient({
     website: user.website || "",
   });
   
-  console.log("BookMarkPost",bookMark);
-  console.log("User Posts",posts);
+ 
+
   
   
   const handleEditSubmit = async () => {

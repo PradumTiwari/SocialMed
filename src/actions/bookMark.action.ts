@@ -62,6 +62,8 @@ export async function getBookMark({postId}:postIdInput){
         postId:postId,
     }
    })
+  
+   
 
    if(existingBookmark){
     //exist so return false

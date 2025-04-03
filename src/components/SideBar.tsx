@@ -1,20 +1,34 @@
+
 import { currentUser } from "@clerk/nextjs/server";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
-import { getUserByClerkId } from "@/actions/user.action";
+import { getFollowing, getUserByClerkId } from "@/actions/user.action";
 import Link from "next/link";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Separator } from "./ui/separator";
 import { LinkIcon, MapPinIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 async function Sidebar() {
+
+  
+
+  
+  const showFollowing=async()=>{
+   const res=   await getFollowing();
+   console.log("Following Details",res);
+   
+  }
+
+
   const authUser = await currentUser();
   if (!authUser) return <UnAuthenticatedSidebar />;
 
   const user = await getUserByClerkId(authUser.id);
   if (!user) return null;
-
+ 
+ 
   return (
     <div className="sticky top-20">
       <Card>
@@ -40,8 +54,11 @@ async function Sidebar() {
               <Separator className="my-4" />
               <div className="flex justify-between">
                 <div>
+                
                   <p className="font-medium">{user._count.following}</p>
                   <p className="text-xs text-muted-foreground">Following</p>
+            
+                 
                 </div>
                 <Separator orientation="vertical" />
                 <div>
