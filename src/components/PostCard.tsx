@@ -202,23 +202,33 @@ function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string
           {showComments && (
             <div className="pt-4 border-t space-y-4">
               {comments.map((comment) => (
-  <div key={comment.id} className="flex space-x-3">
+                <div key={comment.id}>
+  <div  className="flex space-x-3">
+    <Link href={`/profile/${post.author.username}`}>
     <Avatar className="size-8">
       <AvatarImage src={comment.author?.image ?? "/avatar.png"} />
     </Avatar>
+    </Link>
     <div className="flex-1">
-      <p className="text-sm">{comment.content}</p>
-      {comment.author ? (
-        <span className="text-xs text-gray-500">@{comment.author.username}</span>
+      <Link href={`/profile/${post.author.username}`}>
+    {comment.author ? (
+      <div>
+        <span>{comment.author.name}</span>
+        <span className=" pl-2 text-s text-gray-500">@{comment.author.username}</span>
+        </div>
       ) : (
         <span className="text-xs text-red-500">Unknown user</span>
       )}
+      </Link>
+      <p className="text-sm">{comment.content}</p>
+      
     </div>
     {dbUserId === comment.author?.id && (
       <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDeleteComment(comment.id)}>
         <Trash2Icon className="size-4" />
       </Button>
     )}
+  </div>
   </div>
 ))}
             </div>

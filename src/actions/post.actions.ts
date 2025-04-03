@@ -194,3 +194,22 @@ export async function toggleLike(postId: string) {
       return { success: false, error: "Failed to delete post" };
     }
   }
+
+
+
+  export async function LikedUser(postId:string){
+    
+     const likedUsers = await prisma.like.findMany({
+      where: {
+        postId: postId,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    console.log("Fetched liked users:", likedUsers); // Debugging
+
+    return likedUsers;
+    
+  }

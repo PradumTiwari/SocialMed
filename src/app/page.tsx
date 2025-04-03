@@ -10,11 +10,11 @@ import { getDbUserId, getFollowers, getFollowing } from "@/actions/user.action";
 
 export default async function Home() {
   const follower=await getFollowers();
-  console.log("Follower of this",follower);
+  // console.log("Follower of this",follower);
   
   const user=await currentUser();
   const posts=await getPosts();
-
+ 
  const dbUserId=await getDbUserId();
  
  
