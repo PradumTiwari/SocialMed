@@ -1,6 +1,6 @@
 "use client";
 
-import { createComment, deletePost, getPosts, toggleLike } from "../actions/post.actions";
+import { createComment, deletePost, getLikedUsers, getPosts, LikedUser, toggleLike } from "../actions/post.actions";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -16,6 +16,8 @@ import { CiBookmark } from "react-icons/ci";
 import { FaBookmark } from "react-icons/fa";
 import { create, getBookMark } from "@/actions/bookMark.action";
 import { deleteComment } from "@/actions/comment.action";
+import LikedUsersModal from "./LikedUserModal";
+import Modal from "./ui/modal";
 
 type Posts = Awaited<ReturnType<typeof getPosts>>;
 type Post = Posts[number];
@@ -31,7 +33,11 @@ function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string
   const [showComments, setShowComments] = useState(false);
   const [showBookMark, setShowBookMark] = useState(false);
   const [comments, setComments] = useState(post.comments);
-
+  const [isModal,setIsModal]=useState(false);
+  const [users, setUsers] = useState<
+  { id: string; image: string; name: string; username: string }[]
+>([]);
+ const [isLoading, setIsLoading] = useState(true);
   const handleLike = async () => {
     if (isLiking) return;
     try {
@@ -118,9 +124,30 @@ function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string
       setIsDeleting(false);
     }
   };
+
+  const fetchLikedUsers = async () => {
+    try {
+      setIsModal(true);
+      const likedUsers = await getLikedUsers(postId);
+      setUsers(likedUsers.map((l)=>(
+        {
+          id: l.id ?? "", // The user whom the current user follows
+          name: l.name ?? "Unknown",
+          image: l.image ?? "/default-avatar.png",
+          username: l.username ?? "",
+        }
+      )))
+      setIsLoading(false);
+      console.log("Liked Users:", likedUsers);
+    } catch (error) {
+      console.error("Error fetching liked users:", error);
+    }
+  };
   
 
   useEffect(() => {
+
+  
     const fetchBookmark = async () => {
       try {
         const marked = await getBookMark({ postId });
@@ -175,10 +202,15 @@ function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string
           <div className="flex justify-between">
             <div className="flex items-center pt-2 space-x-4">
               {user ? (
+                <div>
                 <Button variant="ghost" size="sm" onClick={handleLike} className={`gap-2 ${hasLiked ? "text-red-500" : "hover:text-red-500"}`}>
                   <HeartIcon className="size-5" />
                   <span>{optimisticLikes}</span>
                 </Button>
+                <Button onClick={fetchLikedUsers}>View Likes</Button>
+                {isModal&&<Modal onClose={() => setIsModal(false)} followers={users}  isLoading={isLoading}  title={"Liked By"}/>}
+                </div>
+
               ) : (
                 <SignInButton mode="modal">
                   <Button variant="ghost" size="sm" className="gap-2">

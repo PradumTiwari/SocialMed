@@ -197,19 +197,28 @@ export async function toggleLike(postId: string) {
 
 
 
-  export async function LikedUser(postId:string){
-    
-     const likedUsers = await prisma.like.findMany({
-      where: {
-        postId: postId,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    console.log("Fetched liked users:", likedUsers); // Debugging
-
-    return likedUsers;
-    
+  export async function getLikedUsers(postId: string) {
+    try {
+      const likedUsers = await prisma.like.findMany({
+        where: {
+          postId: postId,
+        },
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              image: true,
+            },
+          },
+        },
+      });
+  
+      return likedUsers.map((like) => like.user); // Returning only user data
+    } catch (error) {
+      console.error("Error fetching liked users:", error);
+      return []; // Return an empty array in case of failure
+    }
   }
+  

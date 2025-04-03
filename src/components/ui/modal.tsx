@@ -17,6 +17,7 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ onClose, followers, isLoading,title }) => {
+  console.log("Title",title);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close modal if clicked outside
@@ -33,9 +34,11 @@ const Modal: React.FC<ModalProps> = ({ onClose, followers, isLoading,title }) =>
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <h1>{title}</h1>
+     
+      
+    
       <div ref={modalRef} className="bg-white p-5 rounded-lg w-96 shadow-lg">
-        <h2 className="text-lg font-semibold text-gray-800">Following</h2>
+        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
 
         {/* Scrollable List */}
         <div className="mt-4 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
