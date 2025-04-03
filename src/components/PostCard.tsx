@@ -228,7 +228,7 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
                 {post.comments.map((comment) => (
                   
                   <div key={comment.id} className="flex space-x-3">
-                     <Link href={`/profile/${post.author.username}`}>
+                     <Link href={`/profile/${comment.author.username}`}>
                     <Avatar className="size-8 flex-shrink-0">
                       <AvatarImage src={comment.author.image ?? "/avatar.png"} />
                     </Avatar>
