@@ -9,8 +9,6 @@ import { getDbUserId, getFollowing } from "@/actions/user.action";
 
 
 export default async function Home() {
-  const following=await getFollowing();
-  console.log("Ayusg Suwar",following);
   
   const user=await currentUser();
   const posts=await getPosts();

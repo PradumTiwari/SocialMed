@@ -162,6 +162,8 @@ const userid=strings.userId;
         select:{
           followerId:true,
           followingId:true,
+          follower:true,
+          following:true,
         }
       }
     }
