@@ -93,6 +93,20 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
     }
   };
 
+  const handleDeleteComment = async (commentId:string) => {
+    if (isDeleting) return;
+    try {
+      setIsDeleting(true);
+      const result = await handleDeleteComment(commentId);
+      if (result.success) toast.success("Post deleted successfully");
+      else throw new Error(result.error);
+    } catch (error) {
+      toast.error("Failed to delete post");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   useEffect(()=>{
     const fetchBookmark = async () => {
@@ -226,7 +240,7 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
               <div className="space-y-4">
                 {/* DISPLAY COMMENTS */}
                 {post.comments.map((comment) => (
-                  
+                   
                   <div key={comment.id} className="flex space-x-3">
                      <Link href={`/profile/${comment.author.username}`}>
                     <Avatar className="size-8 flex-shrink-0">

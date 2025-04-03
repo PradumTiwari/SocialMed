@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
 import { LinkIcon, MapPinIcon } from "lucide-react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Separator } from "./ui/separator";
-import { getFollowing } from "@/actions/user.action";
+import { getFollowers, getFollowing } from "@/actions/user.action";
 import Modal from "./ui/modal";
 
 interface User {
@@ -29,45 +29,55 @@ interface User {
 
 const SideBarClient = ({ user }: { user: User }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [followers, setFollowers] = useState<{ id: string; name: string; image: string ,username:string}[]>([]);
+  const [followers, setFollowers] = useState<{ id: string; name: string; image: string; username: string }[]>([]);
+  const [following, setFollowing] = useState<{ id: string; name: string; image: string; username: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showFollowers, setShowFollowers] = useState(true);
 
-  // Fetch followers when the page loads
   useEffect(() => {
     const fetchFollowing = async () => {
-      console.log("Fetching followers...");
+      console.log("Fetching following & followers...");
       setIsLoading(true);
-      
+
       try {
         const data = await getFollowing();
-          // Fetch data from API
-        
-          
+        const datafollower=await getFollowers()||[];
+       console.log("Data followerp",datafollower);
+       
         const followingTable = data?.following || [];
 
         console.log("Fetched Data:", followingTable);
 
-        setFollowers(
+        setFollowing(
           followingTable.map((f) => ({
-            id: f.following?.id ?? "",
+            id: f.following?.id ?? "", // The user whom the current user follows
             name: f.following?.name ?? "Unknown",
             image: f.following?.image ?? "/default-avatar.png",
-            username:f.following?.username??"",
+            username: f.following?.username ?? "",
+          }))
+        );
+
+        setFollowers(
+          datafollower.map((f) => ({
+            id: f.follower?.id ?? "", // The user who follows the current user
+            name: f.follower?.name ?? "Unknown",
+            image: f.follower?.image ?? "/default-avatar.png",
+            username: f.follower?.username ?? "",
           }))
         );
       } catch (error) {
-        console.error("Error fetching followers:", error);
+        console.error("Error fetching following/followers:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchFollowing(); 
-  }, []) // Fetch once on mount
+    if (user.id) {
+      fetchFollowing();
+    }
+  }, [user.id]);
 
   return (
-    
-    
     <div>
       <Card>
         <CardContent className="pt-6">
@@ -79,7 +89,7 @@ const SideBarClient = ({ user }: { user: User }) => {
 
               <div className="mt-4 space-y-1">
                 <h3 className="font-semibold">{user.name}</h3>
-                <p className="text-sm text-muted-foreground">{user.username}</p>
+                <p className="text-sm text-muted-foreground">@{user.username}</p>
               </div>
             </Link>
 
@@ -89,16 +99,26 @@ const SideBarClient = ({ user }: { user: User }) => {
               <Separator className="my-4" />
               <div className="flex justify-between">
                 <div>
-                  <button onClick={() => setIsModalOpen(true)}>
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(true);
+                      setShowFollowers(false);
+                    }}
+                  >
                     <p className="font-medium">{user._count.following}</p>
                     <p className="text-xs text-muted-foreground">Following</p>
                   </button>
                 </div>
                 <Separator orientation="vertical" />
                 <div>
-                <button onClick={() => setIsModalOpen(true)}>
-                  <p className="font-medium">{user._count.followers}</p>
-                  <p className="text-xs text-muted-foreground">Followers</p>
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(true);
+                      setShowFollowers(true);
+                    }}
+                  >
+                    <p className="font-medium">{user._count.followers}</p>
+                    <p className="text-xs text-muted-foreground">Followers</p>
                   </button>
                 </div>
               </div>
@@ -113,7 +133,7 @@ const SideBarClient = ({ user }: { user: User }) => {
               <div className="flex items-center text-muted-foreground">
                 <LinkIcon className="w-4 h-4 mr-2 shrink-0" />
                 {user.website ? (
-                  <a href={user.website} className="hover:underline truncate" target="_blank">
+                  <a href={user.website} className="hover:underline truncate" target="_blank" rel="noopener noreferrer">
                     {user.website}
                   </a>
                 ) : (
@@ -124,7 +144,12 @@ const SideBarClient = ({ user }: { user: User }) => {
           </div>
         </CardContent>
         {isModalOpen && (
-          <Modal onClose={() => setIsModalOpen(false)} followers={followers} isLoading={isLoading} />
+          <Modal
+            onClose={() => setIsModalOpen(false)}
+            followers={showFollowers ? followers : following}
+            isLoading={isLoading}
+            title={showFollowers ? "Followers" : "Following"}
+          />
         )}
       </Card>
     </div>

@@ -169,7 +169,28 @@ const userid=strings.userId;
     }
    })
 
-   console.log("Following",following);
+  
 
    return following;
+}
+
+
+export async function getFollowers(){
+  const userId=await getDbUserId();
+  const strings={userId};
+const userid=strings.userId;
+   
+  if(!userId){
+    return null;
+  }
+
+  const follower=await prisma.follows.findMany({
+     where:{
+      followingId:userId,
+     },
+     include:{
+      follower:true,
+     }
+  })
+  return follower;
 }

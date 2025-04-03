@@ -5,10 +5,12 @@ import CreatePost from "@/components/CreatePost";
 import WhoToFollow from "@/components/WhoToFollow";
 import PostCard from "@/components/PostCard";
 import { getPosts } from "@/actions/post.actions";
-import { getDbUserId, getFollowing } from "@/actions/user.action";
+import { getDbUserId, getFollowers, getFollowing } from "@/actions/user.action";
 
 
 export default async function Home() {
+  const follower=await getFollowers();
+  console.log("Follower of this",follower);
   
   const user=await currentUser();
   const posts=await getPosts();
