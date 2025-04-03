@@ -10,16 +10,17 @@ import { Avatar, AvatarImage } from "./ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { DeleteAlertDialog } from "./DeleteAlertDialog";
 import { Button } from "./ui/button";
-import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon } from "lucide-react";
+import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon, Trash2Icon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import { CiBookmark } from "react-icons/ci";
 import { FaBookmark } from "react-icons/fa";
 import { create, getBookMark } from "@/actions/bookMark.action";
+import { deleteComment } from "@/actions/comment.action";
 
 type Posts = Awaited<ReturnType<typeof getPosts>>;
 type Post = Posts[number];
 
-function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string | null;isBookMark:string }) {
+function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string | null; isBookMark: string }) {
   const { user } = useUser();
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
@@ -28,10 +29,10 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
   const [hasLiked, setHasLiked] = useState(post.likes.some((like) => like.userId === dbUserId));
   const [optimisticLikes, setOptmisticLikes] = useState(post._count.likes);
   const [showComments, setShowComments] = useState(false);
- 
-  const [showBookMark,setShowBookMark]=useState(false);
-  const handleLike = async () => {
+  const [showBookMark, setShowBookMark] = useState(false);
+  const [comments, setComments] = useState(post.comments);
 
+  const handleLike = async () => {
     if (isLiking) return;
     try {
       setIsLiking(true);
@@ -46,38 +47,42 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
     }
   };
 
- 
-  const postId=post.id;
+  const postId = post.id;
 
   const handleAddComment = async () => {
     if (!newComment.trim() || isCommenting) return;
+  
     try {
       setIsCommenting(true);
-      const result = await createComment(post.id, newComment);
-      if (result?.success) {
+      const result = await createComment(post.id, newComment, dbUserId!);
+  
+      if (result?.success && result.comment) {  
         toast.success("Comment posted successfully");
         setNewComment("");
+  
+        // Ensure comment includes author details before updating state
+        if (result.comment.author) {
+          setComments((prevComments) => [...prevComments, result.comment]);
+        } else {
+          console.error("Missing author data in returned comment:", result.comment);
+        }
+      } else {
+        toast.error("Failed to add comment");
       }
     } catch (error) {
+      console.error("Error adding comment:", error);
       toast.error("Failed to add comment");
     } finally {
       setIsCommenting(false);
     }
   };
+  
 
-  const handleBookMark=async()=>{
-    
+  const handleBookMark = async () => {
     setShowBookMark((prev) => !prev);
-    const res=await create({postId});
-    if(res==false){
-      //means already  a bookmark
-      setShowBookMark(false);
-    }
-    else{
-      //its a new bookmark
-       setShowBookMark(true);
-    }
-  }
+    const res = await create({ postId });
+    setShowBookMark(res !== false); // If already bookmarked, keep false
+  };
 
   const handleDeletePost = async () => {
     if (isDeleting) return;
@@ -93,44 +98,44 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
     }
   };
 
-  const handleDeleteComment = async (commentId:string) => {
+  const handleDeleteComment = async (commentId: string) => {
     if (isDeleting) return;
+    console.log("Deleting comment with ID:", commentId); // Debugging
     try {
       setIsDeleting(true);
-      const result = await handleDeleteComment(commentId);
-      if (result.success) toast.success("Post deleted successfully");
-      else throw new Error(result.error);
+      const result = await deleteComment(commentId);
+      console.log("Delete result:", result); // Debugging
+      if (result.success) {
+        toast.success("Comment deleted successfully");
+        setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
-      toast.error("Failed to delete post");
+      console.error("Error deleting comment:", error);
+      toast.error("Failed to delete comment");
     } finally {
       setIsDeleting(false);
     }
   };
+  
 
-
-  useEffect(()=>{
+  useEffect(() => {
     const fetchBookmark = async () => {
       try {
         const marked = await getBookMark({ postId });
-        if (marked==true) {
-          setShowBookMark(true);
-        }
+        setShowBookMark(marked === true);
       } catch (error) {
         console.error("Error fetching bookmark:", error);
       }
     };
-  
-   if(!isBookMark){
-    fetchBookmark();
-   }
-   else{
-    setShowBookMark(true);
-   }
-    
-    
-   
 
-  },[postId])
+    if (!isBookMark) {
+      fetchBookmark();
+    } else {
+      setShowBookMark(true);
+    }
+  }, [postId]);
 
   return (
     <Card className="overflow-hidden">
@@ -143,15 +148,11 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
               </Avatar>
             </Link>
 
-            {/* POST HEADER & TEXT CONTENT */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 truncate">
-                  <Link
-                    href={`/profile/${post.author.username}`}
-                    className="font-semibold truncate"
-                  >
-                    {post.author.name} 
+                  <Link href={`/profile/${post.author.username}`} className="font-semibold truncate">
+                    {post.author.name}
                   </Link>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Link href={`/profile/${post.author.username}`}>@{post.author.username}</Link>
@@ -159,161 +160,67 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
                     <span>{formatDistanceToNow(new Date(post.createdAt))} ago</span>
                   </div>
                 </div>
-                {/* Check if current user is the post author */}
-                {dbUserId === post.author.id && (
-                  <DeleteAlertDialog isDeleting={isDeleting} onDelete={handleDeletePost} />
-                )}
+                {dbUserId === post.author.id && <DeleteAlertDialog isDeleting={isDeleting} onDelete={handleDeletePost} />}
               </div>
               <p className="mt-2 text-sm text-foreground break-words">{post.content}</p>
             </div>
           </div>
 
-          {/* POST IMAGE */}
           {post.image && (
             <div className="rounded-lg overflow-hidden">
               <img src={post.image} alt="Post content" className="w-full h-auto object-cover" />
             </div>
           )}
 
-          {/* LIKE & COMMENT BUTTONS */}
-         <div className="flex justify-between ">
-         <div className="flex items-center pt-2 space-x-4">
-            {user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-muted-foreground gap-2 ${
-                  hasLiked ? "text-red-500 hover:text-red-600" : "hover:text-red-500"
-                }`}
-                onClick={handleLike}
-              >
-                {hasLiked ? (
-                  <HeartIcon className="size-5 fill-current" />
-                ) : (
-                  <HeartIcon className="size-5" />
-                )}
-                <span>{optimisticLikes}</span>
-              </Button>
-            ) : (
-              <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="text-muted-foreground gap-2">
+          <div className="flex justify-between">
+            <div className="flex items-center pt-2 space-x-4">
+              {user ? (
+                <Button variant="ghost" size="sm" onClick={handleLike} className={`gap-2 ${hasLiked ? "text-red-500" : "hover:text-red-500"}`}>
                   <HeartIcon className="size-5" />
                   <span>{optimisticLikes}</span>
                 </Button>
-              </SignInButton>
-            )}
-
-           
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground gap-2 hover:text-blue-500"
-              onClick={() => setShowComments((prev) => !prev)}
-            >
-              <MessageCircleIcon
-                className={`size-5 ${showComments ? "fill-blue-500 text-blue-500" : ""}`}
-              />
-              <span>{post.comments.length}</span>
-            </Button>
-   
-            
-          </div>
-
-          <div className="flex pt-[13px]">
-           
-           {showBookMark==true?(<button className="text-xl" onClick={()=>handleBookMark()}>
-           <FaBookmark/>
-           </button>):(<button className="text-xl" onClick={()=>handleBookMark()}>
-           <CiBookmark/>
-           </button>)}
-          </div>
-
-         </div>
-
-          {/* The bookmark section */}
-          
-
-          {/* COMMENTS SECTION */}
-          {showComments && (
-            <div className="space-y-4 pt-4 border-t">
-              <div className="space-y-4">
-                {/* DISPLAY COMMENTS */}
-                {post.comments.map((comment) => (
-                   
-                  <div key={comment.id} className="flex space-x-3">
-                     <Link href={`/profile/${comment.author.username}`}>
-                    <Avatar className="size-8 flex-shrink-0">
-                      <AvatarImage src={comment.author.image ?? "/avatar.png"} />
-                    </Avatar>
-                    </Link>
-                    
-                    <div className="flex-1 min-w-0">
-                  
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <Link href={`/profile/${comment.author.username}`}>
-                        <span className="font-medium text-sm">{comment.author.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          @{comment.author.username}
-                        </span>
-                        </Link>
-                      
-                        <span className="text-sm text-muted-foreground">·</span>
-                        <span className="text-sm text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.createdAt))} ago
-                        </span>
-                      </div>
-                     
-                     
-                     
-                      <p className="text-sm break-words">{comment.content}</p>
-                    </div>
-                  
-                  </div>
-                ))}
-              </div>
-
-              {user ? (
-                <div className="flex space-x-3">
-                  <Avatar className="size-8 flex-shrink-0">
-                    <AvatarImage src={user?.imageUrl || "/avatar.png"} />
-                  </Avatar>
-                  <div className="flex-1">
-                    <Textarea
-                      placeholder="Write a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[80px] resize-none"
-                    />
-                    <div className="flex justify-end mt-2">
-                      <Button
-                        size="sm"
-                        onClick={handleAddComment}
-                        className="flex items-center gap-2"
-                        disabled={!newComment.trim() || isCommenting}
-                      >
-                        {isCommenting ? (
-                          "Posting..."
-                        ) : (
-                          <>
-                            <SendIcon className="size-4" />
-                            Comment
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
               ) : (
-                <div className="flex justify-center p-4 border rounded-lg bg-muted/50">
-                  <SignInButton mode="modal">
-                    <Button variant="outline" className="gap-2">
-                      <LogInIcon className="size-4" />
-                      Sign in to comment
-                    </Button>
-                  </SignInButton>
-                </div>
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <HeartIcon className="size-5" />
+                    <span>{optimisticLikes}</span>
+                  </Button>
+                </SignInButton>
               )}
+
+              <Button variant="ghost" size="sm" className="gap-2 hover:text-blue-500" onClick={() => setShowComments(!showComments)}>
+                <MessageCircleIcon className="size-5" />
+                <span>{comments.length}</span>
+              </Button>
+            </div>
+
+            <button className="text-xl" onClick={handleBookMark}>
+              {showBookMark ? <FaBookmark /> : <CiBookmark />}
+            </button>
+          </div>
+
+          {showComments && (
+            <div className="pt-4 border-t space-y-4">
+              {comments.map((comment) => (
+  <div key={comment.id} className="flex space-x-3">
+    <Avatar className="size-8">
+      <AvatarImage src={comment.author?.image ?? "/avatar.png"} />
+    </Avatar>
+    <div className="flex-1">
+      <p className="text-sm">{comment.content}</p>
+      {comment.author ? (
+        <span className="text-xs text-gray-500">@{comment.author.username}</span>
+      ) : (
+        <span className="text-xs text-red-500">Unknown user</span>
+      )}
+    </div>
+    {dbUserId === comment.author?.id && (
+      <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDeleteComment(comment.id)}>
+        <Trash2Icon className="size-4" />
+      </Button>
+    )}
+  </div>
+))}
             </div>
           )}
         </div>
@@ -321,4 +228,5 @@ function PostCard({ post, dbUserId,isBookMark }: { post: Post; dbUserId: string 
     </Card>
   );
 }
+
 export default PostCard;
