@@ -14,6 +14,8 @@ import { currentUser } from "@clerk/nextjs/server";
 import { syncUser } from "@/actions/user.action";
 import SideBar from "@/components/SideBar";
 import {Toaster} from "react-hot-toast";
+import { AiFillMessage } from "react-icons/ai";
+import { MobileFloatingDock } from "@/components/ui/MobileFloatingDock";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -62,20 +64,53 @@ export default async function RootLayout({
           </div>
 
           {/* FloatingDock (Fixed Center) */}
-          <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50">
-            <FloatingDock
-              className="flex gap-x-8 p-4"
-              items={[
-                { title: "Home", icon: <IoMdHome />, href: "/" },
-                ...(user
-                  ? [
-                      { title: "Notifications", icon: <GoTerminal />, href: "/notifications" },
-                      { title: "About", icon: <FaUser />, href: `/profile` }
-                    ]
-                  : []),
-              ]}
-            />
-          </div>
+ {/* FloatingDock - Responsive */}
+<div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50">
+  {/* Large screen: horizontal */}
+  <div className="hidden sm:flex gap-x-8 p-4 bg-background rounded-xl shadow-lg">
+    <FloatingDock
+      className="flex gap-x-8"
+      items={[
+        { title: "Home", icon: <IoMdHome />, href: "/" },
+        ...(user
+          ? [
+              { title: "Notifications", icon: <GoTerminal />, href: "/notifications" },
+              { title: "About", icon: <FaUser />, href: `/profile` },
+              { title: "Message", icon: <AiFillMessage />, href: `/message` },
+            ]
+          : []),
+      ]}
+    />
+  </div>
+
+  {/* Small screen: vertical expandable */}
+  <div className="sm:hidden group relative">
+   <button className="bg-primary text-white p-3 rounded-full shadow-lg" aria-label="Open menu">
+  ☰
+</button>
+    <div className="absolute top-14 right-0 w-48 bg-background p-3 rounded-lg shadow-lg hidden group-hover:block transition-all duration-200 space-y-2">
+      {[
+        { title: "Home", icon: <IoMdHome />, href: "/" },
+        ...(user
+          ? [
+              { title: "Notifications", icon: <GoTerminal />, href: "/notifications" },
+              { title: "About", icon: <FaUser />, href: `/profile` },
+              { title: "Message", icon: <AiFillMessage />, href: `/message` },
+            ]
+          : []),
+      ].map((item) => (
+        <a
+          key={item.href}
+          href={item.href}
+          className="flex items-center gap-3 p-2 hover:bg-muted rounded-md"
+        >
+          <span className="text-xl">{item.icon}</span>
+          <span className="text-sm">{item.title}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</div>
 
           {/* Main Layout with Sidebar (3:9 Ratio) */}
           <div className="pt-28">
@@ -90,7 +125,7 @@ export default async function RootLayout({
                       </div>
 
                       {/* Main Content (9/12 - 75%) */}
-                      <div className="lg:col-span-9">{children}</div>
+                      <div className=" col-span-12 lg:col-span-9">{children}</div>
                     </div>
                   </div>
                 </main>

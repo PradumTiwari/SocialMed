@@ -207,7 +207,7 @@ function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string
                   <HeartIcon className="size-5" />
                   <span>{optimisticLikes}</span>
                 </Button>
-                <Button onClick={fetchLikedUsers}>View Likes</Button>
+                
                 {isModal&&<Modal onClose={() => setIsModal(false)} followers={users}  isLoading={isLoading}  title={"Liked By"}/>}
                 </div>
 
@@ -230,6 +230,7 @@ function PostCard({ post, dbUserId, isBookMark }: { post: Post; dbUserId: string
               {showBookMark ? <FaBookmark /> : <CiBookmark />}
             </button>
           </div>
+          <Button onClick={fetchLikedUsers}>View Likes</Button>
 
           {showComments && (
             <div className="pt-4 border-t space-y-4">

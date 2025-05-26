@@ -36,18 +36,15 @@ const SideBarClient = ({ user }: { user: User }) => {
 
   useEffect(() => {
     const fetchFollowing = async () => {
-      console.log("Fetching following & followers...");
-      setIsLoading(true);
+       setIsLoading(true);
 
       try {
         const data = await getFollowing();
         const datafollower=await getFollowers()||[];
-       console.log("Data followerp",datafollower);
        
         const followingTable = data?.following || [];
 
-        console.log("Fetched Data:", followingTable);
-
+      
         setFollowing(
           followingTable.map((f) => ({
             id: f.following?.id ?? "", // The user whom the current user follows

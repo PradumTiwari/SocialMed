@@ -8,6 +8,7 @@ import {
   import ProfilePageClient from "./ProfliePageClient";
 import { getBookMark, getBookMarkOfUser } from "@/actions/bookMark.action";
   
+
   export async function generateMetadata({ params }: { params: { username: string } }) {
     const user = await getProfileByUsername(params.username);
     if (!user) return;

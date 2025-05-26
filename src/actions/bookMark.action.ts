@@ -32,7 +32,7 @@ export async function create({postId}:postIdInput){
                 id:existingBookmark.id
             }
         })
-        console.log("Bookmark deleted Sucessfully");
+       
         return false;
     }
     else{
