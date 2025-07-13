@@ -4,6 +4,7 @@ import WhoToFollow from "@/components/WhoToFollow";
 import PostCard from "@/components/PostCard";
 import { getPosts } from "@/actions/post.actions";
 import { getDbUserId, getFollowers } from "@/actions/user.action";
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const follower = await getFollowers();

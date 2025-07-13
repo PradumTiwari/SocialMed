@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/dist/server/api-utils";
 
 //It does nothing just to check if the user is present in database or not
 export async function syncUser() {
@@ -10,7 +11,7 @@ export async function syncUser() {
     const { userId } = await auth();
     const user = await currentUser();
 
-    if (!userId || !user || !user.emailAddresses.length) return null;
+    if (!userId || !user || !user.emailAddresses.length) return redirect("/");
 
     const existingUser = await prisma.user.findUnique({
       where: { clerkId: userId },
